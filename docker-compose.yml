@@ -1,0 +1,72 @@
+version: "3.9"
+
+services:
+
+  # -----------------------
+  # USERS DATABASE
+  # -----------------------
+  users-db:
+    image: postgres:15
+    container_name: users-db
+    restart: always
+    environment:
+      POSTGRES_DB: users_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5444:5432"
+    volumes:
+      - users_data:/var/lib/postgresql/data
+
+  # -----------------------
+  # POSTS DATABASE
+  # -----------------------
+  posts-db:
+    image: postgres:15
+    container_name: posts-db
+    restart: always
+    environment:
+      POSTGRES_DB: posts_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5445:5432"
+    volumes:
+      - posts_data:/var/lib/postgresql/data
+
+  # -----------------------
+  # USERS SERVICE
+  # -----------------------
+  users-service:
+    build: ./users-service
+    container_name: users-service
+    restart: always
+    depends_on:
+      - users-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://users-db:5432/users_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: pass
+    ports:
+      - "8082:8082"
+
+  # -----------------------
+  # POSTS SERVICE
+  # -----------------------
+  posts-service:
+    build: ./PostsBackendSpringBootTest1
+    container_name: posts-service
+    restart: always
+    depends_on:
+      - posts-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://posts-db:5432/posts_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: pass
+    ports:
+      - "8081:8081"
+
+
+volumes:
+  users_data:
+  posts_data:
